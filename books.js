@@ -2,23 +2,25 @@ function addNewBook() {
     let name = $('#name').val();
     let author = $('#author').val();
     let price = $('#price').val();
-    let category = $('#category').val();
-    let newBook = {
-        name: name,
-        author: author,
-        price: price,
-        category: {
-            id: parseInt(category)
-        },
-    }
+    let category = $(`#category`).val();
+    let image = $(`#image`)
+    let newBook =new FormData;
+   newBook.append('name',name)
+   newBook.append('price',price)
+   newBook.append('author',author)
+   newBook.append('category',category)
+   newBook.append('image',image.prop('files')[0]);
     $.ajax({
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
+        // headers: {
+        //     'Accept': 'application/json',
+        //     'Content-Type': 'application/json'
+        // },
+        enctype: 'multipart/form-data',
+        processData: false,
+        contentType: false,
         type: "POST",
-        data: JSON.stringify(newBook),
-        url: "http://localhost:8080/books",
+        data: newBook,
+        url: `http://localhost:8080/books`,
         success: function () {
             allBooks();
         }
@@ -38,6 +40,7 @@ function allBooks() {
                     `<td>${data[i].author}</td>` +
                     `<td>${data[i].price}</td>` +
                     ` <td>${data[i].category.name}</td>` +
+                    `<td><img src="${'http://localhost:8080/image/'+data[i].image}" width="100px"></td>`+
                     `<td><button onclick="deleteBook(${data[i].id})" data-bs-toggle="modal" >Delete</button><td/>
                  <td><button type="button" onclick="showEditForm(${data[i].id})" data-bs-toggle="modal" data-bs-target="#myModal">Update</button></td>` +
                     `</tr>`
@@ -86,6 +89,8 @@ function showEditForm(id) {
                 $(`#author1`).val(book.author),
                 $(`#price1`).val(book.price),
                 $(`#category1`).val(book.category.name)
+            let img = `<img src="http://localhost:8080/image/${book.image}" width="100">`
+                $(`#image1`).html(img)
             $("#action").html(content)
         }
     })
@@ -96,27 +101,33 @@ function updateBook(id) {
     let author = $(`#author1`).val();
     let price = $(`#price1`).val();
     let category = $(`#category1`).val();
-    let editForm = {
-        id : id,
-        name: name,
-        author: author,
-        price: price,
-        category: {
-            id: parseInt(category)
-        },
+    let image =$(`#image2`);
+    let editForm = new FormData;
+    editForm.append('name',name)
+    editForm.append('price',price)
+    editForm.append('author',author)
+    editForm.append('category',category)
+    editForm.append('image',image.prop('files')[0]);
+    if (image.prop('files')[0]===undefined){
+        let file = new File([""],"filename.jpg")
+        editForm.append('image',file);
     }
     $.ajax({
-        headers: {
-            'Accepted': 'application/json',
-            'Content-Type': 'application/json',
-        },
-        type:"PUT",
-        data :JSON.stringify(editForm),
+        // headers: {
+        //     'Accepted': 'application/json',
+        //     'Content-Type': 'application/json',
+        // },
+        enctype: 'multipart/form-data',
+        processData: false,
+        contentType: false,
+        type:"POST",
+        data :editForm,
         url: `http://localhost:8080/books/${id}`,
         success : function () {
             allBooks()
         }
     })
+    event.preventDefault();
 }
 
 allCategory();
